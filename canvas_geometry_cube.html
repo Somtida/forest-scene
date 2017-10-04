@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>three.js canvas</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body {
+			font-family: Monospace;
+			background-color: #c8f2f7;
+			margin: 0px;
+			overflow: hidden;
+		}
+	</style>
+</head>
+
+<body>
+	<span style="position:absolute;top:0px;left:0px;">
+		<input type="button" value="Toggle Wireframe" onclick="mesh.material.wireframe=!mesh.material.wireframe;meshFloor.material.wireframe=!meshFloor.material.wireframe;"/>
+		<br/>WASD to move.<br/>Arrow keys to turn.
+	</span>
+	<script src="js/three.js"></script>
+
+	<!-- <script src="js/renderers/Projector.js"></script> -->
+	<!-- <script src="js/renderers/CanvasRenderer.js"></script> -->
+
+	<!-- <script src="js/libs/stats.min.js"></script> -->
+	<script src="js/MTLLoader.js"></script>
+	<script src="js/OBJLoader.js"></script>
+
+	<script>
+
+		var scene, camera, renderer, mesh;
+		var meshFloor, ambientLight, light;
+
+		var crate, crateTexture, crateNormalMap, crateBumpMap;
+
+		var keyboard = {};
+		var player = {
+			height: 1,
+			speed: 0.2,
+			turnSpeed: Math.PI * 0.02
+		};
+		var USE_WIREFRAME = false;
+
+		function init() {
+			scene = new THREE.Scene();
+			scene.background = new THREE.Color( 0xC8F2FC );
+			camera = new THREE.PerspectiveCamera(90, 1280 / 720, 0.1, 1000);
+
+			mesh = new THREE.Mesh(
+				new THREE.BoxGeometry(0.5, 0.5, 0.5),
+				new THREE.MeshPhongMaterial({
+					color: 0xeb13ec,
+					wireframe: USE_WIREFRAME
+				})
+			);
+			mesh.position.x = Math.random();
+			mesh.position.y += 1;
+			mesh.receiveShadow = true;
+			mesh.castShadow = true;
+			scene.add(mesh);
+
+			meshFloor = new THREE.Mesh(
+				new THREE.PlaneGeometry(160, 160, 80, 80),
+				new THREE.MeshPhongMaterial({
+					color: 0xccd827,
+					wireframe: USE_WIREFRAME
+				})
+			);
+			meshFloor.rotation.x -= Math.PI / 2;
+			meshFloor.receiveShadow = true;
+			scene.add(meshFloor);
+
+			ambientLight = new THREE.AmbientLight(0xf7cd51, 0.2);
+			scene.add(ambientLight);
+
+			directionalLight = new THREE.DirectionalLight( 0xe89f14 );
+			directionalLight.position.set( 1, 1, - 1 );
+			directionalLight.position.normalize();
+			scene.add( directionalLight );
+
+			// light = new THREE.PointLight(0xffffff, 0.8, 18);
+			// light.position.set(-3, 5, -3);
+			// light.castShadow = true;
+			// light.shadow.camera.near = 10;
+			// light.shadow.camera.far = 80;
+			// scene.add(light);
+
+
+			// var textureLoader = new THREE.TextureLoader();
+			// crateTexture = textureLoader.load("crate0/crate0_diffuse.jpg");
+			// crateBumpMap = textureLoader.load("crate0/crate0_bump.jpg");
+			// crateNormalMap = textureLoader.load("crate0/crate0_normal.jpg");
+			//
+			// crate = new THREE.Mesh(
+			// 	new THREE.BoxGeometry(3, 3, 3),
+			// 	new THREE.MeshPhongMaterial({
+			// 		color: 0xffffff,
+			// 		map: crateTexture,
+			// 		bumpMap: crateBumpMap,
+			// 		normalMap: crateNormalMap
+			// 	})
+			// );
+			// scene.add(crate);
+			// crate.position.set(2.5, 3 / 2, 2.5);
+			// crate.receiveShadow = true;
+			// crate.castShadow = true;
+
+
+
+
+
+			// Model/material loading!
+
+
+			// Oak Green Tree
+			var mtlLoader = new THREE.MTLLoader();
+			mtlLoader.load("models/Oak_Green_01.mtl", function(materials) {
+
+				materials.preload();
+				var objLoader = new THREE.OBJLoader();
+				objLoader.setMaterials(materials);
+
+				objLoader.load("models/Oak_Green_01.obj", function(mesh) {
+
+					mesh.traverse(function(node) {
+						if (node instanceof THREE.Mesh) {
+							node.castShadow = true;
+							node.receiveShadow = true;
+						}
+						if( node.material ) {
+			        node.material.side = THREE.DoubleSide;
+				    }
+					});
+
+					scene.add(mesh);
+					mesh.position.set(-8, 0, -1);
+					mesh.rotation.y = -Math.PI / 4;
+					for(var i=1;i<20;i++) {
+						var newmesh = mesh.clone();
+						newmesh.position.set(Math.random() * 2 - 1,0,Math.random() * 2 - 1);
+						newmesh.position.normalize();
+						newmesh.position.multiplyScalar( 20 );
+						scene.add(newmesh);
+
+					}
+
+				});
+
+			});
+
+			// Oak Fall Tree
+			var mtlLoader = new THREE.MTLLoader();
+			mtlLoader.load("models/Oak_Fall_01.mtl", function(materials) {
+
+				materials.preload();
+				var objLoader = new THREE.OBJLoader();
+				objLoader.setMaterials(materials);
+
+				objLoader.load("models/Oak_Fall_01.obj", function(mesh) {
+
+					mesh.traverse(function(node) {
+						if (node instanceof THREE.Mesh) {
+							node.castShadow = true;
+							node.receiveShadow = true;
+						}
+						if( node.material ) {
+			        node.material.side = THREE.DoubleSide;
+				    }
+					});
+
+					scene.add(mesh);
+					mesh.position.set(-8, 0, -1);
+					mesh.rotation.y = -Math.PI / 4;
+					for(var i=1;i<10;i++) {
+						var newmesh = mesh.clone();
+						newmesh.position.set(Math.random() * 2 - 1,0,Math.random() * 2 - 1);
+						// newmesh.position.normalize();
+						newmesh.position.multiplyScalar( 70 );
+						scene.add(newmesh);
+
+					}
+
+				});
+
+			});
+
+			// Coconut Tree
+			var mtlLoader = new THREE.MTLLoader();
+			mtlLoader.load("models/naturePack_168.mtl", function(materials) {
+
+				materials.preload();
+				var objLoader = new THREE.OBJLoader();
+				objLoader.setMaterials(materials);
+
+				objLoader.load("models/naturePack_168.obj", function(mesh) {
+
+					mesh.traverse(function(node) {
+						if (node instanceof THREE.Mesh) {
+							node.castShadow = true;
+							node.receiveShadow = true;
+						}
+						if( node.material ) {
+			        node.material.side = THREE.DoubleSide;
+				    }
+					});
+
+					scene.add(mesh);
+					mesh.position.set(0, 0, -1);
+					mesh.rotation.y = -Math.PI / 4;
+					for(var i=1;i<40;i++) {
+						var newmesh = mesh.clone();
+						newmesh.position.set(Math.random() * 2 - 1.2,0,Math.random() * 2 - 0.8);
+						// newmesh.position.normalize();
+						newmesh.position.multiplyScalar( 50 );
+						scene.add(newmesh);
+
+					}
+
+				});
+
+			});
+
+			// Pine Tree
+			var mtlLoader = new THREE.MTLLoader();
+			mtlLoader.load("models/naturePack_114.mtl", function(materials) {
+
+				materials.preload();
+				var objLoader = new THREE.OBJLoader();
+				objLoader.setMaterials(materials);
+
+				objLoader.load("models/naturePack_114.obj", function(mesh) {
+
+					mesh.traverse(function(node) {
+						if (node instanceof THREE.Mesh) {
+							node.castShadow = true;
+							node.receiveShadow = true;
+						}
+						if( node.material ) {
+			        node.material.side = THREE.DoubleSide;
+				    }
+					});
+
+					scene.add(mesh);
+					mesh.position.set(2, 0, -1);
+					mesh.rotation.y = -Math.PI / 4;
+					for(var i=1;i<30;i++) {
+						var newmesh = mesh.clone();
+						newmesh.position.set(Math.random() * 2 -1.5,0,Math.random() * 2 - 1);
+						// newmesh.position.normalize();
+						newmesh.position.multiplyScalar( 60 );
+						scene.add(newmesh);
+
+					}
+
+				});
+
+			});
+
+			// Cactus
+			var mtlLoader = new THREE.MTLLoader();
+			mtlLoader.load("models/naturePack_040.mtl", function(materials) {
+
+				materials.preload();
+				var objLoader = new THREE.OBJLoader();
+				objLoader.setMaterials(materials);
+
+				objLoader.load("models/naturePack_040.obj", function(mesh) {
+
+					mesh.traverse(function(node) {
+						if (node instanceof THREE.Mesh) {
+							node.castShadow = true;
+							node.receiveShadow = true;
+						}
+						if( node.material ) {
+			        node.material.side = THREE.DoubleSide;
+				    }
+					});
+
+					scene.add(mesh);
+					mesh.position.set(2, 0, -1);
+					mesh.rotation.y = -Math.PI / 4;
+					for(var i=1;i<20;i++) {
+						var newmesh = mesh.clone();
+						newmesh.position.set(Math.random() * 2 -1.5,0,Math.random() * 2 - 1);
+						// newmesh.position.normalize();
+						newmesh.position.multiplyScalar( 20 );
+						scene.add(newmesh);
+
+					}
+
+				});
+
+			});
+
+			// plant
+			var mtlLoader = new THREE.MTLLoader();
+			mtlLoader.load("models/Plant_1_01.mtl", function(materials) {
+
+				materials.preload();
+				var objLoader = new THREE.OBJLoader();
+				objLoader.setMaterials(materials);
+
+				objLoader.load("models/Plant_1_01.obj", function(mesh) {
+
+					mesh.traverse(function(node) {
+						if (node instanceof THREE.Mesh) {
+							node.castShadow = true;
+							node.receiveShadow = true;
+						}
+						if( node.material ) {
+			        node.material.side = THREE.DoubleSide;
+				    }
+					});
+
+					scene.add(mesh);
+					mesh.position.set(-1, 0, 1);
+					for(var i=1;i<30;i++) {
+						var newmesh = mesh.clone();
+						newmesh.position.set(Math.random() * 2 - 1,0,Math.random() * 2 - 1);
+						// newmesh.position.normalize();
+						newmesh.position.multiplyScalar( 15 );
+						scene.add(newmesh);
+
+					}
+
+				});
+
+			});
+
+			// flower
+			var mtlLoader = new THREE.MTLLoader();
+			mtlLoader.load("models/Flower_Yellow_01.mtl", function(materials) {
+
+				materials.preload();
+				var objLoader = new THREE.OBJLoader();
+				objLoader.setMaterials(materials);
+
+				objLoader.load("models/Flower_Yellow_01.obj", function(mesh) {
+
+					mesh.traverse(function(node) {
+						if (node instanceof THREE.Mesh) {
+							node.castShadow = true;
+							node.receiveShadow = true;
+						}
+						if( node.material ) {
+			        node.material.side = THREE.DoubleSide;
+				    }
+					});
+
+					scene.add(mesh);
+					mesh.position.set(-1, 0, 1);
+					for(var i=1;i<30;i++) {
+						var newmesh = mesh.clone();
+						newmesh.position.set(Math.random() * 2 - 0.5,0,Math.random() * 2 - 1);
+						// newmesh.position.normalize();
+						newmesh.position.multiplyScalar( 30 );
+						scene.add(newmesh);
+
+					}
+
+				});
+
+			});
+
+			// Mushroom
+			var mtlLoader = new THREE.MTLLoader();
+			mtlLoader.load("models/Mushroom_Red_01.mtl", function(materials) {
+
+				materials.preload();
+				var objLoader = new THREE.OBJLoader();
+				objLoader.setMaterials(materials);
+
+				objLoader.load("models/Mushroom_Red_01.obj", function(mesh) {
+
+					mesh.traverse(function(node) {
+						if (node instanceof THREE.Mesh) {
+							node.castShadow = true;
+							node.receiveShadow = true;
+						}
+						if( node.material ) {
+			        node.material.side = THREE.DoubleSide;
+				    }
+					});
+
+					scene.add(mesh);
+					mesh.position.set(-1, 0, 1);
+					for(var i=1;i<40;i++) {
+						var newmesh = mesh.clone();
+						newmesh.position.set(Math.random() * 2 - 1,0,Math.random() * 2 - 1);
+						// newmesh.position.normalize();
+						newmesh.position.multiplyScalar( 30 );
+						scene.add(newmesh);
+
+					}
+
+				});
+
+			});
+
+			// Rock
+			var mtlLoader = new THREE.MTLLoader();
+			mtlLoader.load("models/Rock_6_01.mtl", function(materials) {
+
+				materials.preload();
+				var objLoader = new THREE.OBJLoader();
+				objLoader.setMaterials(materials);
+
+				objLoader.load("models/Rock_6_01.obj", function(mesh) {
+
+					mesh.traverse(function(node) {
+						if (node instanceof THREE.Mesh) {
+							node.castShadow = true;
+							node.receiveShadow = true;
+						}
+						if( node.material ) {
+			        node.material.side = THREE.DoubleSide;
+				    }
+					});
+
+					scene.add(mesh);
+					mesh.position.set(-1, 0, 1);
+					for(var i=1;i<30;i++) {
+						var newmesh = mesh.clone();
+						newmesh.position.set(Math.random() * 2 - 1,0,Math.random() * 2 - 1);
+						newmesh.position.normalize();
+						newmesh.position.multiplyScalar( 15 );
+						scene.add(newmesh);
+
+					}
+
+				});
+
+			});
+
+			// waterfall
+			var mtlLoader = new THREE.MTLLoader();
+			mtlLoader.load("models/Brown_Waterfall_01.mtl", function(materials) {
+
+				materials.preload();
+				var objLoader = new THREE.OBJLoader();
+				objLoader.setMaterials(materials);
+
+				objLoader.load("models/Brown_Waterfall_01.obj", function(mesh) {
+
+					mesh.traverse(function(node) {
+						if (node instanceof THREE.Mesh) {
+							node.castShadow = true;
+							node.receiveShadow = true;
+						}
+						if( node.material ) {
+			        node.material.side = THREE.DoubleSide;
+				    }
+					});
+
+					scene.add(mesh);
+					mesh.position.set(-5, 0, 5);
+					mesh.rotation.y = -Math.PI / 4;
+
+
+				});
+
+			});
+
+			// river
+			var mtlLoader = new THREE.MTLLoader();
+			mtlLoader.load("models/Plate_River_01.mtl", function(materials) {
+
+				materials.preload();
+				var objLoader = new THREE.OBJLoader();
+				objLoader.setMaterials(materials);
+
+				objLoader.load("models/Plate_River_01.obj", function(mesh) {
+
+					mesh.traverse(function(node) {
+						if (node instanceof THREE.Mesh) {
+							node.castShadow = true;
+							node.receiveShadow = true;
+						}
+						if( node.material ) {
+			        node.material.side = THREE.DoubleSide;
+				    }
+					});
+
+					scene.add(mesh);
+					mesh.position.set(2.5, 0, -1.5);
+					// mesh.position.set(-5, 0, 1.5);
+					mesh.rotation.y = -Math.PI / 4;
+					for(var i=1;i<5;i++) {
+						var newmesh = mesh.clone();
+						newmesh.position.set(-2*i, 0, i*3);
+						scene.add(newmesh);
+
+					}
+
+				});
+
+			});
+
+			// tent
+			var mtlLoader = new THREE.MTLLoader();
+			mtlLoader.load("models/Tent_01.mtl", function(materials) {
+
+				materials.preload();
+				var objLoader = new THREE.OBJLoader();
+				objLoader.setMaterials(materials);
+
+				objLoader.load("models/Tent_01.obj", function(mesh) {
+
+					mesh.traverse(function(node) {
+						if (node instanceof THREE.Mesh) {
+							node.castShadow = true;
+							node.receiveShadow = true;
+						}
+						if( node.material ) {
+			        node.material.side = THREE.DoubleSide;
+				    }
+					});
+
+					scene.add(mesh);
+					mesh.position.set(2.5, 0, -1.5);
+					// mesh.position.set(-5, 0, 1.5);
+					mesh.rotation.y = -Math.PI / 4;
+					for(var i=1;i<5;i++) {
+						var newmesh = mesh.clone();
+						newmesh.position.set(Math.random() * 2 - 1,0,Math.random() * 2 - 1);
+						newmesh.position.multiplyScalar( 20 );
+						mesh.rotation.y = Math.PI / 2;
+						scene.add(newmesh);
+
+					}
+
+				});
+
+			});
+
+			// character
+			var mtlLoader = new THREE.MTLLoader();
+			mtlLoader.load("character/basicCharacter.obj.mtl", function(materials) {
+
+				materials.preload();
+				var objLoader = new THREE.OBJLoader();
+				objLoader.setMaterials(materials);
+
+				objLoader.load("character/basicCharacter.obj", function(mesh) {
+
+					mesh.traverse(function(node) {
+						if (node instanceof THREE.Mesh) {
+							node.castShadow = true;
+							node.receiveShadow = true;
+						}
+						if( node.material ) {
+			        node.material.side = THREE.DoubleSide;
+				    }
+					});
+
+					scene.add(mesh);
+					mesh.position.set(2, 0, -1.5);
+					// mesh.position.set(-5, 0, 1.5);
+					mesh.rotation.y = -Math.PI / 4;
+					for(var i=1;i<5;i++) {
+						var newmesh = mesh.clone();
+						newmesh.position.set(Math.random() * 2 - 1,0,Math.random() * 2 - 1);
+						newmesh.position.multiplyScalar( 15 );
+						mesh.rotation.y = Math.PI / 2;
+						scene.add(newmesh);
+
+					}
+
+				});
+
+			});
+
+
+			// camera.position.set(-5, 10, -5);
+			camera.position.set(0, player.height, -5);
+			camera.lookAt(new THREE.Vector3(0, player.height, 0));
+
+			renderer = new THREE.WebGLRenderer();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			// renderer.setSize(1280, 720);
+
+			renderer.shadowMap.enabled = true;
+			renderer.shadowMap.type = THREE.BasicShadowMap;
+
+			document.body.appendChild(renderer.domElement);
+
+			animate();
+		}
+
+		function animate() {
+			requestAnimationFrame(animate);
+
+			mesh.rotation.x += 0.01;
+			mesh.rotation.y += 0.02;
+			// crate.rotation.y += 0.01;
+
+			if (keyboard[87]) { // W key
+				camera.position.x -= Math.sin(camera.rotation.y) * player.speed;
+				camera.position.z -= -Math.cos(camera.rotation.y) * player.speed;
+			}
+			if (keyboard[83]) { // S key
+				camera.position.x += Math.sin(camera.rotation.y) * player.speed;
+				camera.position.z += -Math.cos(camera.rotation.y) * player.speed;
+			}
+			if (keyboard[65]) { // A key
+				camera.position.x += Math.sin(camera.rotation.y + Math.PI / 2) * player.speed;
+				camera.position.z += -Math.cos(camera.rotation.y + Math.PI / 2) * player.speed;
+			}
+			if (keyboard[68]) { // D key
+				camera.position.x += Math.sin(camera.rotation.y - Math.PI / 2) * player.speed;
+				camera.position.z += -Math.cos(camera.rotation.y - Math.PI / 2) * player.speed;
+			}
+
+			if (keyboard[37]) { // left arrow key
+				camera.rotation.y -= player.turnSpeed;
+			}
+			if (keyboard[39]) { // right arrow key
+				camera.rotation.y += player.turnSpeed;
+			}
+
+			renderer.render(scene, camera);
+		}
+
+		function keyDown(event) {
+			keyboard[event.keyCode] = true;
+		}
+
+		function keyUp(event) {
+			keyboard[event.keyCode] = false;
+		}
+
+		window.addEventListener('keydown', keyDown);
+		window.addEventListener('keyup', keyUp);
+
+		window.onload = init;
+	</script>
+
+</body>
+
+</html>
