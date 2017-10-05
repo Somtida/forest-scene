@@ -62,10 +62,18 @@
 			mesh.castShadow = true;
 			scene.add(mesh);
 
+			var textureLoader = new THREE.TextureLoader();
+			crateTexture = textureLoader.load("assets/green-grass.jpg");
+			// crateBumpMap = textureLoader.load("assets/green-grass.jpg");
+			// crateNormalMap = textureLoader.load("assets/green-grass.jpg");
+
 			meshFloor = new THREE.Mesh(
 				new THREE.PlaneGeometry(160, 160, 80, 80),
 				new THREE.MeshPhongMaterial({
 					color: 0xccd827,
+					map: crateTexture,
+					// bumpMap: crateBumpMap,
+					// normalMap: crateNormalMap,
 					wireframe: USE_WIREFRAME
 				})
 			);
